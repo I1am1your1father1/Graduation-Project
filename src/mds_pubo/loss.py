@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import torch
 
-def loss_mds_onehot_pubo(outs: torch.Tensor, H: torch.Tensor, **kwargs):
+def loss_mds_pubo(outs: torch.Tensor, closed_nbh, **kwargs):
     r"""Loss function for Dominating Set (MDS) problem formulated as One-Hot PUBO (OH-PUBO)"""
 
     epoch = kwargs.get("epoch", 1)
@@ -12,18 +12,19 @@ def loss_mds_onehot_pubo(outs: torch.Tensor, H: torch.Tensor, **kwargs):
     cons_conf = cons_lambda(epoch, num_epochs)
     obj_conf = obj_lambda(epoch, num_epochs)
 
-    X_ = outs.t().unsqueeze(-1)
-    H_ = H.unsqueeze(0)
-    mid = X_ * H_
-    sub = (mid + (1 - H)).prod(dim=1).sum()  # Set the irrelevant position to 1 so that it cannot participate in multiplication
+    unselected = outs[:, 0]
+    selected = outs[:, 1]
+    cons_terms = []
+    for nbh in closed_nbh:
+        cons_terms.append(unselected[nbh].prod())
 
-    loss_cons_obj = sub
-    loss_obj = (- outs).sum()
+    loss_cons = torch.stack(cons_terms).sum()
+    loss_obj = selected.sum()
 
     if epoch % 100 == 0:
-        tqdm.write(f"Epoch: {epoch:.2f} | " f"obj Loss: {loss_obj:.2f} | " f"cons Loss: {loss_cons_obj:.2f} |")
+        tqdm.write(f"Epoch: {epoch:.2f} | " f"obj Loss: {loss_obj:.2f} | " f"cons Loss: {loss_cons:.2f} |")
    
-    loss_cons_obj = 2 * cons_conf * loss_cons_obj
+    loss_cons = 2 * cons_conf * loss_cons
     loss_obj = obj_conf * loss_obj
 
-    return loss_obj + loss_cons_obj
+    return loss_obj + loss_cons

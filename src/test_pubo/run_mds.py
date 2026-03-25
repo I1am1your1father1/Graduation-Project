@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import torch
 
 from src.mds_pubo.model import Net
-from src.mds_pubo.loss_gini import loss_mds_gini_pubo
+from src.mds_pubo.loss import loss_mds_pubo
 
 from src.core import init, get_device, run_graph_pubo, Layer, LayerType, Datasets
 from src.utils import from_file_to_graph, generate_data
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         x,
         graph,  
         2000,
-        loss_mds_gini_pubo,
+        loss_mds_pubo,
         1e-4,
     )
 

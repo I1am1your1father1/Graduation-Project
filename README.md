@@ -16,6 +16,7 @@
 ### hypergraph
  - Five hypergraphs in it.(They are not used.)
 
+# Main experiments
 
 ## src
  - All of my main experiences codes.
@@ -78,6 +79,71 @@
 
 ## utils.py
  - Functions of reading graph data, hypergraph data and generating random graph.
+
+
+# Comparative experiments
+
+## coloring_comparison
+ - core.py
+ - DSATUR.py
+ - greedy.py
+ - scip.py
+ - tabu.py
+ - utils.py
+
+## maxcut_comparison
+ - core.py
+ - greedy.py
+ - scip.py
+ - tabu.py
+ - utils.py
+
+## mds_comparison
+ - core.py
+ - greedy.py
+ - random_mds.py
+ - scip.py
+ - tabu.py
+ - utils.py
+
+## mis_comparison
+ - core.py
+ - greedy.py
+ - scip.py
+ - tabu.py
+ - utils.py
+
+## partitioning_comparison
+ - core.py
+ - greedy.py
+ - KL.py
+ - random_partition.py
+ - scip.py
+ - utils.py
+
+## results
+ - coloring_dsatur_results.csv     The results of DSATUR solver
+ - coloring_greedy_results.csv     The results of greedy solver
+ - coloring_scip_results.csv     The results of scip solver
+ - coloring_tabu_results.csv     The results of tabu solver
+
+ - maxcut_greedy_results.csv     The results of greedy solver
+ - maxcut_scip_results.csv     The results of scip solver
+ - maxcut_tabu_results.csv     The results of tabu solver
+
+ - mds_greedy_results.csv     The results of greedy solver
+ - mds_random_results.csv     The results of random solver
+ - mds_scip_results.csv     The results of scip solver
+ - mds_tabu_results.csv     The results of tabu solver
+
+ - mis_greedy_results.csv     The results of greedy solver
+ - mis_scip_results.csv     The results of scip solver
+ - mis_tabu_results.csv     The results of tabu solver
+
+ - partition_greedy_results.csv     The results of greedy solver
+ - partition_KL_results.csv     The results of KL solver
+ - partition_random_results.csv     The results of random partition solver
+ - partition_scip_results.csv     The results of scip solver
 
 
 # environment.yaml

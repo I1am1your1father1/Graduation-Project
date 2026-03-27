@@ -488,52 +488,6 @@ def run_qubo(type: Literal["coloring", "partitioning", "maxcut", "mis"], net, X,
 
 
 # modified
-# def run_pubo(
-#     type: Literal["coloring", "partitioning", "maxcut", "mis", "mds"], net, X, hypergraph, num_epochs, lr, opt: Literal["Adam", "AdamW"] = "adamW", evaluate=False, simple=False, **kwargs
-# ):
-#     """Solve Hypergraph proper coloring and Hypergraph partitioning problems  
-
-#     Args:
-#         evaluate (bool):
-#             Whether to return the detailed evaluation results of the corresponding task
-#         simple (bool):
-#            Modified according to the method of generating graphs based on hypergraphs, see `Note` and [DHG](https://deephypergraph.readthedocs.io/en/latest/api/dhg.html?highlight=hypergcn#graph)
-#         kwargs: see `src/core/run`
-
-#     Note:
-#         Q: Why does the `run_pubo` interface require not only the necessary hypergraph object
-#            but also an additional graph object?
-#         A: In our network architecture, we used ``GNN`` instead of ``Hyper GNN``, requiring the conversion
-#            of HyperGraph into Graph through certain transformation rules. The existing Hyper GNN does not perform well in our problem
-#     """
-#     from .utils import from_hypergraph_to_graph_clique, from_hypergraph_to_graph_hypergcn
-
-#     if type == "coloring":
-#         from .coloring.utils import coloring_evaluate as evaluate
-#         from .coloring.loss import loss_coloring_onehot_pubo as loss_fn
-#     elif type == "partitioning":
-#         from .partitioning.utils import partitioning_evaluate as evaluate
-#         from .partitioning.loss import loss_partitioning_onehot_pubo as loss_fn
-#     elif type == "maxcut":
-#         from .maxcut.utils import maxcut_evaluate as evaluate
-#         from .maxcut.loss import loss_maxcut_onehot_pubo as loss_fn
-#     elif type == "mds":
-#         from .mds.utils import mds_evaluate as evaluate
-#         from .mds.loss import loss_mds_onehot_pubo as loss_fn
-#     else:
-#         raise ValueError("type parameter Error")
-#     H = hypergraph.H.to_dense()
-#     graph = from_hypergraph_to_graph_clique(hypergraph) if not simple else from_hypergraph_to_graph_hypergcn(hypergraph)
-#     edge_index = torch.tensor(graph.e[0], dtype=torch.long).t().contiguous()
-#     logger.info(f"Hypergraph to graph: {hypergraph.num_v} vertices {edge_index.shape[1]} graph edges")
-#     loss, outs = run(net, X, hypergraph, num_epochs, loss_fn, lr, opt, edge_index=edge_index, H=H, **kwargs)
-#     evalute_results = evaluate(outs[0], hypergraph)
-#     if evaluate:
-#         return loss, outs, evalute_results
-#     return loss, outs, None
-
-
-# modified
 def run_graph_pubo(
     type: Literal["coloring", "partitioning", "maxcut", "mis", "mds"], net, X, graph, num_epochs, loss_fn, lr, opt: Literal["Adam", "AdamW"] = "adamW", evaluate=False, simple=False, **kwargs
 ):
@@ -546,15 +500,6 @@ def run_graph_pubo(
            Modified according to the method of generating graphs based on hypergraphs, see `Note` and [DHG](https://deephypergraph.readthedocs.io/en/latest/api/dhg.html?highlight=hypergcn#graph)
         kwargs: see `src/core/run`
     """
-    # if type == "coloring":
-    #     from .coloring_pubo.utils import coloring_evaluate as evaluate
-    #     from .coloring_pubo.loss import loss_coloring_onehot_pubo as loss_fn
-    # elif type == "partitioning":
-    #     from .partitioning_pubo.utils import partitioning_evaluate as evaluate
-    #     from .partitioning_pubo.loss import loss_partitioning_onehot_pubo as loss_fn
-    # elif type == "maxcut":
-    #     from .maxcut.utils import maxcut_evaluate as evaluate
-    #     from .maxcut.loss import loss_maxcut_onehot_pubo as loss_fn
     if type == "mds":
         from .mds_pubo.utils import mds_evaluate as evaluate
         from .mds_pubo.loss_gini import loss_mds_gini_pubo as loss_fn

@@ -61,38 +61,3 @@ def _gini_annealed_loss(x: torch.Tensor):
     """Gini Coefficient-Based Annealing Algorithm"""
     gini = (1 - (2 * x - 1).pow(2)).sum()
     return gini
-
-
-# def loss_gap(outs: torch.Tensor, A , **kwargs):
-#     """
-#     loss function described in [GAP: Generalizable Approximate Graph Partitioning Framework](https://arxiv.org/pdf/1903.00614)
-#     copied from [here](https://github.com/saurabhdash/GCN_Partitioning/blob/master/utils.py#L109).
-#     Args:
-#         X_ij : Probability that a node i belongs to partition j
-#         A : dense adjecency matrix
-#     Returns:
-#         Loss : Y/Gamma * (1 - Y)^T dot A
-#     """
-#     D = torch.sum(A, dim=1)
-#     Gamma = torch.mm(outs.t(), D.unsqueeze(1))
-#     loss_gap = torch.sum(torch.mm(torch.div(outs.float(), Gamma.t()), (1 - outs).t().float()) * A.float())
-#     loss_cons = loss_partitioning_constraints(outs)
-     
-#     epoch = kwargs.get("epoch", 1)
-#     num_epochs = kwargs.get("num_epochs", None)
-#     obj_cof_lambda = kwargs.get("obj_cof_lambda", lambda e, n: 1.0)
-#     cons_cof_lambda = kwargs.get("cons_cof_lambda", lambda e, n: 1.0)
-    
-#     if epoch % 20 == 0:
-#         tqdm.write(
-#             f"Epoch: {epoch} | "
-#             f"partitioning Loss: {loss_gap.item():.2f} | "
-#             f"balance Loss: {loss_cons.item():.2f}"
-#         )
-#     obj_cof = obj_cof_lambda(epoch, num_epochs)
-#     cons_cof = cons_cof_lambda(epoch, num_epochs)
-    
-#     loss_gap = loss_gap * obj_cof
-#     loss_cons = loss_cons * cons_cof
-    
-#     return loss_gap + loss_cons

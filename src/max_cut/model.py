@@ -5,10 +5,10 @@ import torch
 import torch.nn as nn
 
 
-class Net(nn.Module):
+class MAXCUTNet(nn.Module):
 
     def __init__(self, layers: List[Layer]):
-        super(Net, self).__init__()
+        super(MAXCUTNet, self).__init__()
         self.layers = nn.ModuleList(layers)
         self.softmax = nn.Softmax(dim=1)
 

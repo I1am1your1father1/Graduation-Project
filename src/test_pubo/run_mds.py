@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 import torch
 
-from src.mds_pubo.model import Net
+from src.mds_pubo.model import MDSNet
 from src.mds_pubo.loss import loss_mds_pubo
 
 from src.core import init, get_device, run_graph_pubo, Layer, LayerType, Datasets
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                   Layer(LayerType.LINEAR, 64, 2, use_bn=False, drop_rate=0.1)]
   
     all_layers = gnn_layers + obj_layers
-    net = Net(all_layers)
+    net = MDSNet(all_layers)
 
     loss, outs, _ = run_graph_pubo(
         "mds",

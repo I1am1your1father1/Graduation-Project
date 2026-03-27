@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 import torch
 
-from src.mis.model import Net
+from src.mis.model import MISNet
 from src.mis.loss_gini import loss_mis_gini_qubo
 from src.mis.utils import is_maximal_independent_set
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     obj_layers = [Layer(LayerType.LINEAR, 128, 64, use_bn=False, drop_rate=0.1),
                   Layer(LayerType.LINEAR, 64, 1, use_bn=False, drop_rate=0.1)]
 
-    net = Net(gnn_layers, obj_layers).to(device)
+    net = MISNet(gnn_layers, obj_layers).to(device)
 
     gini_cons_lambda = lambda e, n: (-1000 + e) / 500
 

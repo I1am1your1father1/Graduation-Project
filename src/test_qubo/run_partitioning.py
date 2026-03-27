@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 import torch
 
-from src.partitioning.model import Net
+from src.partitioning.model import PARTITIONNet
 from src.partitioning.loss import loss_partitioning_qubo
 
 from src.core import init, get_device, run_qubo, Layer, LayerType, Datasets
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     layers = gnn_layers + shared_layers + obj_layers
 
-    net = Net(layers).to(device)
+    net = PARTITIONNet(layers).to(device)
 
     loss, outs = run_qubo(
         "partitioning",

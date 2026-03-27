@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 import torch
 
-from src.max_cut.model import Net
+from src.max_cut.model import MAXCUTNet
 from src.max_cut.loss_gini import loss_maxcut_gini_qubo
 
 from src.core import init, get_device, run_qubo, Layer, LayerType, Datasets
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     obj_layers = [Layer(LayerType.LINEAR, 128, 64, use_bn=False, drop_rate=0.1),
                   Layer(LayerType.LINEAR, 64, 2, use_bn=False, drop_rate=0.1)]
     
-    net = Net(gnn_layers + shared_layers + obj_layers).to(device)
+    net = MAXCUTNet(gnn_layers + shared_layers + obj_layers).to(device)
 
     gini_cons_lambda = lambda e, n: (-1000 + e) / 500
 

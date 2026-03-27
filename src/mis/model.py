@@ -4,9 +4,9 @@ from ..core import Layer
 from typing import List
 
 
-class Net(nn.Module):
+class MISNet(nn.Module):
     def __init__(self, gnn_layers: List[Layer], obj_layers: List[Layer]):
-        super(Net, self).__init__()
+        super(MISNet, self).__init__()
         self.gnn_layers = nn.ModuleList(gnn_layers)  # 用于图神经网络的层
         self.obj_layers = nn.ModuleList(obj_layers)  # 用于目标输出的层
         self.sigmoid = nn.Sigmoid()

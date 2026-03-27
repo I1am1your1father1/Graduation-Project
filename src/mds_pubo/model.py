@@ -7,9 +7,9 @@ from core import Layer
 from typing import List
 
 
-class Net(nn.Module):
+class MDSNet(nn.Module):
     def __init__(self, layers: List[Layer]):
-        super(Net, self).__init__()
+        super(MDSNet, self).__init__()
         self.layers = nn.ModuleList(layers)
         self.softmax = nn.Softmax(dim=1)
 

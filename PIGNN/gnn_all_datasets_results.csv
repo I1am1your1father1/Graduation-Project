@@ -1,0 +1,10 @@
+﻿dataset_enum,dataset_value,dataset_type,file_path,num_nodes,num_edges,mis_size,violation_edges,is_valid,time_sec
+Graph_Cora,,,,,,,,False,
+Graph_Citeseer,,,,,,,,False,
+Graph_Amazon_PC,,,,,,,,False,
+Graph_Amazon_Photo,,,,,,,,False,
+Graph_Pubmed,,,,,,,,False,
+Graph_dblp,,,,,,,,False,
+Graph_bat,,,,,,,,False,
+Graph_eat,,,,,,,,False,
+Graph_uat,,,,,,,,False,

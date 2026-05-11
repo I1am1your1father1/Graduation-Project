@@ -238,3 +238,166 @@ def run_gnn_training(q_torch, dgl_graph, net, embed, optimizer, number_epochs, t
     final_bitstring = (probs.detach() >= prob_threshold) * 1
 
     return net, epoch, final_bitstring, best_bitstring
+
+
+# =========================
+# MaxCut functions
+# =========================
+
+def gen_q_dict_maxcut(nx_G):
+    """
+    Construct QUBO matrix for MaxCut.
+
+    MaxCut objective:
+        maximize sum_(i,j in E) [x_i (1 - x_j) + x_j (1 - x_i)]
+
+    Equivalent minimization form:
+        minimize sum_(i,j in E) [2 x_i x_j - x_i - x_j]
+
+    x_i = 0/1 means node i belongs to one of the two partitions.
+    """
+    Q_dic = {}
+
+    for u, v in nx_G.edges():
+        Q_dic[(u, v)] = Q_dic.get((u, v), 0) + 2
+        Q_dic[(u, u)] = Q_dic.get((u, u), 0) - 1
+        Q_dic[(v, v)] = Q_dic.get((v, v), 0) - 1
+
+    return Q_dic
+
+
+def loss_func_maxcut(probs, Q_mat):
+    """
+    Loss function for MaxCut QUBO.
+
+    The Q matrix is constructed as the minimization form of negative cut value.
+    Therefore, minimizing this loss is equivalent to maximizing the cut value.
+    """
+    probs_ = torch.unsqueeze(probs, 1)
+    cost = (probs_.T @ Q_mat @ probs_).squeeze()
+
+    return cost
+
+
+def postprocess_maxcut_bitstring(bitstring, nx_graph):
+    """
+    Calculate MaxCut value from a 0/1 bitstring.
+
+    Args:
+        bitstring: tensor or list, 0/1 assignment of nodes
+        nx_graph: NetworkX graph
+
+    Returns:
+        cut_value: number of cut edges
+        cut_ratio: cut_value / number_of_edges
+        partition_0: nodes assigned to 0
+        partition_1: nodes assigned to 1
+    """
+    if isinstance(bitstring, torch.Tensor):
+        bitstring_list = bitstring.detach().cpu().long().view(-1).tolist()
+    else:
+        bitstring_list = list(bitstring)
+
+    partition_0 = set()
+    partition_1 = set()
+
+    for node, value in enumerate(bitstring_list):
+        if int(value) == 0:
+            partition_0.add(node)
+        else:
+            partition_1.add(node)
+
+    cut_value = 0
+    for u, v in nx_graph.edges():
+        if int(bitstring_list[u]) != int(bitstring_list[v]):
+            cut_value += 1
+
+    total_edges = nx_graph.number_of_edges()
+    cut_ratio = cut_value / total_edges if total_edges > 0 else 0.0
+
+    return cut_value, cut_ratio, partition_0, partition_1
+
+
+def run_gnn_training_maxcut(
+    q_torch,
+    dgl_graph,
+    net,
+    embed,
+    optimizer,
+    number_epochs,
+    tol,
+    patience,
+    prob_threshold
+):
+    """
+    Run PI-GNN training for MaxCut.
+
+    This function does not modify the original run_gnn_training.
+    Difference:
+        original run_gnn_training records best_bitstring according to continuous loss;
+        this MaxCut version records best_bitstring according to discrete bitstring loss.
+    """
+    inputs = embed.weight
+
+    prev_loss = 1.
+    count = 0
+
+    best_bitstring = torch.zeros(
+        (dgl_graph.number_of_nodes(),)
+    ).type(q_torch.dtype).to(q_torch.device)
+
+    best_bitstring_loss = loss_func_maxcut(best_bitstring.float(), q_torch)
+    best_continuous_loss = None
+
+    t_gnn_start = time()
+
+    for epoch in range(number_epochs):
+        probs = net(dgl_graph, inputs)[:, 0]
+
+        # continuous relaxation loss
+        loss = loss_func_maxcut(probs, q_torch)
+        loss_ = loss.detach().item()
+
+        # discrete solution
+        bitstring = (probs.detach() >= prob_threshold) * 1
+        bitstring = bitstring.type(q_torch.dtype).to(q_torch.device)
+
+        # select best according to discrete QUBO loss
+        bitstring_loss = loss_func_maxcut(bitstring.float(), q_torch)
+
+        if bitstring_loss < best_bitstring_loss:
+            best_bitstring_loss = bitstring_loss
+            best_bitstring = bitstring.clone().detach()
+
+        if best_continuous_loss is None or loss < best_continuous_loss:
+            best_continuous_loss = loss.clone().detach()
+
+        if epoch % 1000 == 0:
+            print(f'Epoch: {epoch}, Loss: {loss_}')
+
+        if (abs(loss_ - prev_loss) <= tol) | ((loss_ - prev_loss) > 0):
+            count += 1
+        else:
+            count = 0
+
+        if count >= patience:
+            print(f'Stopping early on epoch {epoch} (patience: {patience})')
+            break
+
+        prev_loss = loss_
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    t_gnn = time() - t_gnn_start
+
+    print(f'GNN training (n={dgl_graph.number_of_nodes()}) took {round(t_gnn, 3)}')
+    print(f'GNN final continuous loss: {loss_}')
+    print(f'GNN best continuous loss: {best_continuous_loss}')
+    print(f'GNN best discrete loss: {best_bitstring_loss}')
+
+    final_bitstring = (probs.detach() >= prob_threshold) * 1
+    final_bitstring = final_bitstring.type(q_torch.dtype).to(q_torch.device)
+
+    return net, epoch, final_bitstring, best_bitstring

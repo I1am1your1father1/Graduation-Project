@@ -1,0 +1,10 @@
+﻿dataset_enum,dataset_value,dataset_type,file_path,num_nodes,num_edges,num_parts,num_trials,best_cut_edges,avg_cut_edges,std_cut_edges,best_balance_gap,part_sizes,is_valid,avg_time_sec
+Graph_Cora,cora_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/cora_graph.txt,2708,5278,2,10,1176,1345.1,132.0987887908137,0,1354 1354,True,0.0026181936264038086
+Graph_Citeseer,citeseer_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/citeseer_graph.txt,3279,4552,2,10,761,883.0,115.30568069267012,1,1640 1639,True,0.003105616569519043
+Graph_Amazon_PC,amazon_electronics_computers_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/amazon_electronics_computers_graph.txt,13471,245861,2,10,58068,84337.3,18345.230165086512,1,6736 6735,True,0.04441902637481689
+Graph_Amazon_Photo,amazon_electronics_photo_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/amazon_electronics_photo_graph.txt,7535,119081,2,10,19613,34289.7,9593.58354370253,1,3768 3767,True,0.021473026275634764
+Graph_Pubmed,pubmed_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/pubmed_graph.txt,19717,44324,2,10,10493,12680.6,1113.5755205642768,1,9859 9858,True,0.022238683700561524
+Graph_dblp,dblp_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/dblp_graph.txt,2591,3528,2,10,569,659.8,59.17567067638524,1,1296 1295,True,0.0022796154022216796
+Graph_bat,bat_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/bat_graph.txt,131,1003,2,10,438,490.3,24.21590386502226,1,66 65,True,0.0002012968063354492
+Graph_eat,eat_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/eat_graph.txt,399,5993,2,10,2827,2933.2,47.503263045816134,1,200 199,True,0.0009058237075805664
+Graph_uat,uat_graph,graph,/home/dingning/毕设/Mine/src/../data/graph/uat_graph.txt,1190,13599,2,10,4807,5646.7,759.7178489413027,0,595 595,True,0.002396702766418457

@@ -6,7 +6,7 @@ import torch
 from src.mds_pubo.model import MDSNet
 from src.mds_pubo.loss_gini import loss_mds_gini_pubo
 
-from src.core import init, get_device, run_graph_pubo, Layer, LayerType, Datasets
+from src.core import init, get_device, run_qubo, Layer, LayerType, Datasets
 from src.utils import from_file_to_graph, generate_data
 
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     gini_cons_lambda = lambda e, n: (-500 + e) / 1000
 
-    loss, outs, _ = run_graph_pubo(
+    loss, outs, _ = run_qubo(
         "mds",
         net,
         x,

@@ -25,14 +25,17 @@ def maxcut_construct_Q(graph):
     
     return Q
 
-def maxcut_evaluate(outs: torch.Tensor, graph, threshold=0.7):
+def maxcut_evaluate(outs: torch.Tensor, graph, threshold=0.7, decision_threshold=0.5):
     """
     Evaluate the effectiveness of Max-Cut partitioning
 
     Args:
-        outs: Model output tensor shape (num_nodes, 2) (one-hot probabilities for two groups)
+        outs: Model output tensor.
+              If shape is (num_nodes, 1), outs[:, 0] is treated as the probability of group 1.
+              If shape is (num_nodes, 2), outs is treated as one-hot probabilities for two groups.
         graph: The graph object
         threshold: Confidence threshold for node convergence
+        decision_threshold: Decision threshold for binary sigmoid output
 
     Returns:
         {
@@ -45,46 +48,69 @@ def maxcut_evaluate(outs: torch.Tensor, graph, threshold=0.7):
     """
     nodes = sorted(graph.v)
     edges_raw = graph.e[0]
-    
+
     if isinstance(edges_raw, torch.Tensor) and edges_raw.dim() == 2 and edges_raw.shape[0] == 2:
         edges = edges_raw.t().tolist()
     else:
         edges = edges_raw
-    
+
     node2idx = {v: i for i, v in enumerate(nodes)}
-    
+
     if outs.shape[0] != len(nodes):
         raise ValueError(f"Output contains {outs.shape[0]} nodes, but graph has {len(nodes)} nodes")
-    
-    # Get hard assignments with one-hot encoding
-    max_vals, max_indices = torch.max(outs, dim=1)
-    outs_hard = torch.zeros_like(outs, dtype=torch.int)
-    outs_hard.scatter_(1, max_indices.unsqueeze(1), 1)
-    
-    # Calculate convergence and group distribution
+
+    # Get hard assignments
+    if outs.dim() == 1 or outs.shape[1] == 1:
+        # Binary sigmoid case:
+        # outs[:, 0] >= decision_threshold -> group 1
+        # outs[:, 0] <  decision_threshold -> group 0
+        probs = outs.view(-1)
+
+        max_indices = (probs >= decision_threshold).long()
+
+        # For binary sigmoid output, confidence means being close to 0 or 1.
+        max_vals = torch.maximum(probs, 1 - probs)
+
+        group0_count = int((max_indices == 0).sum().item())
+        group1_count = int((max_indices == 1).sum().item())
+        group_distribution = (group0_count, group1_count)
+
+    else:
+        # One-hot / two-class probability case
+        max_vals, max_indices = torch.max(outs, dim=1)
+
+        outs_hard = torch.zeros_like(outs, dtype=torch.int)
+        outs_hard.scatter_(1, max_indices.unsqueeze(1), 1)
+
+        group_counts = outs_hard.sum(dim=0).cpu().numpy().astype(int)
+
+        # Avoid index error when one group has no node
+        group0_count = int(group_counts[0]) if len(group_counts) > 0 else 0
+        group1_count = int(group_counts[1]) if len(group_counts) > 1 else 0
+        group_distribution = (group0_count, group1_count)
+
+    # Calculate convergence
     not_converged = (max_vals < threshold).sum().item()
-    group_counts = (outs_hard.sum(dim=0).cpu().numpy().astype(int))
-    group_distribution = (int(group_counts[0]), int(group_counts[1]))
-    
+
     # Count cut edges
     cut_edges = 0
     for edge in edges:
         try:
             # Get indices for both nodes in the edge
-            indices = [node2idx[v] for v in edge]
+            indices = [node2idx[int(v)] for v in edge]
         except KeyError as e:
             raise ValueError(f"Edge {edge} contains unknown node: {e}")
-        
+
         # Get group assignments for both nodes
         group_assignments = max_indices[indices]
-        
+
         # Check if nodes are in different groups
         if group_assignments[0] != group_assignments[1]:
             cut_edges += 1
-    
+
     total_edges = len(edges)
     accuracy = cut_edges / total_edges if total_edges > 0 else 0.0
-    
+
     print(f"+------------[MaxCut Evaluation]------------+")
     print(
         f"Cut Edges: {cut_edges}/{total_edges} ({accuracy:.1%})\n"
@@ -92,7 +118,7 @@ def maxcut_evaluate(outs: torch.Tensor, graph, threshold=0.7):
         f"Unconverged Nodes: {not_converged}"
     )
     print(f"+--------------------------------------------+")
-    
+
     return {
         "cut_edges": cut_edges,
         "total_edges": total_edges,

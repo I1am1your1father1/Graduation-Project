@@ -2,9 +2,9 @@
  - Using gini continuous relaxation for solving Combinatorial Optimization questions, including graph coloring, max cut, minimum dominating set, minimum independent set and graph partitioning.
 
 ## 开发环境
-- 操作系统：Linux Fedora
-- 编程语言：Python 3.9
-- 环境管理：Conda
+- OS：Linux Fedora
+- Language：Python 3.9
+- Environment：Conda
 
 
 ## data
@@ -83,6 +83,10 @@
 
 # Comparative experiments
 
+## PIGNN
+ - https://github.com/IvanIsCoding/GNN-for-Combinatorial-Optimization
+ - Using PIGNN to saving many CO problems, and compared with my method.
+
 ## coloring_comparison
  - core.py
  - DSATUR.py
@@ -108,7 +112,7 @@
 
 ## mis_comparison
  - core.py
- - greedy.py
+ - greedy.py     Random 10 times results
  - scip.py
  - tabu.py
  - utils.py
@@ -127,7 +131,7 @@
  - coloring_scip_results.csv     The results of scip solver
  - coloring_tabu_results.csv     The results of tabu solver
 
- - maxcut_greedy_results.csv     The results of greedy solver
+ - maxcut_random_greedy_results.csv     The results of random greedy solver
  - maxcut_scip_results.csv     The results of scip solver
  - maxcut_tabu_results.csv     The results of tabu solver
 
@@ -136,11 +140,11 @@
  - mds_scip_results.csv     The results of scip solver
  - mds_tabu_results.csv     The results of tabu solver
 
- - mis_greedy_results.csv     The results of greedy solver
+ - mis_random_greedy_results.csv     The results of random greedy solver
  - mis_scip_results.csv     The results of scip solver
  - mis_tabu_results.csv     The results of tabu solver
 
- - partition_greedy_results.csv     The results of greedy solver
+ - partition_random_greedy_results.csv     The results of random greedy solver
  - partition_KL_results.csv     The results of KL solver
  - partition_random_results.csv     The results of random partition solver
  - partition_scip_results.csv     The results of scip solver

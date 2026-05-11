@@ -427,7 +427,7 @@ def run(net, X, graph, num_epochs, loss_fn, lr, opt, **kwargs):
 
 
 # modified
-def run_qubo(type: Literal["coloring", "partitioning", "maxcut", "mis"], net, X, graph, num_epochs, loss_fn, lr, opt: Literal["Adam", "AdamW"] = "AdamW", evaluate=False, **kwargs):
+def run_qubo(type: Literal["coloring", "mds", "partitioning", "maxcut", "mis"], net, X, graph, num_epochs, loss_fn, lr, opt: Literal["Adam", "AdamW"] = "AdamW", evaluate=False, **kwargs):
     """Solve graph coloring and graph partitioning problems
     
     Args:
@@ -458,6 +458,11 @@ def run_qubo(type: Literal["coloring", "partitioning", "maxcut", "mis"], net, X,
         from .mis.utils import mis_construct_Q as construct_Q
         from .mis.utils import mis_evaluate as evaluate_f
         from .mis.loss_gini import loss_mis_gini_qubo as _loss_fn
+    elif type == "mds":
+        from .mds.utils import mds_construct_Q as construct_Q
+        from .mds.utils import mds_construct_B as construct_B
+        from .mds.utils import mds_evaluate as evaluate_f
+        from .mds.loss_gini import loss_mds_gini_qubo as _loss_fn
     else:
         raise ValueError("type parameter Error")
     

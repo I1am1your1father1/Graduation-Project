@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     net = PARTITIONNet(layers).to(device)
 
-    gini_cons_lambda = lambda e, n: (e - 1500) / 1000
+    gini_cons_lambda = lambda e, n: (-1500 + e ) / 500
 
     loss, outs = run_qubo(
         "partitioning",

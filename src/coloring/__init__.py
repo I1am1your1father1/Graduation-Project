@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 from .model import DualHeadNet
 from .loss import loss_coloring_qubo
 from .loss_gini import loss_coloring_gini_qubo
-from .utils import ColoringSCIPSolver, coloring_tabu, coloring_construct_Q, coloring_evaluate
+from .utils import coloring_construct_Q, coloring_evaluate
 
 
 __all__ = [

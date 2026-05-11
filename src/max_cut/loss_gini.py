@@ -18,7 +18,7 @@ def loss_maxcut_gini_qubo(outs: torch.Tensor, Q, **kwargs):
     Q_nodiag.fill_diagonal_(0)
     loss_obj = ((outs.T.mm(Q_nodiag) * outs.T) + (outs.T * Q_diag)).sum()
 
-    if epoch % 50 == 0:
+    if epoch % 100 == 0:
         tqdm.write(f"Epoch: {epoch:.2f} | " f"obj Loss: {loss_obj:.2f} | " f"annealing Loss: {loss_gini:.2f} | ")
 
     loss_gini = gini_cof * loss_gini

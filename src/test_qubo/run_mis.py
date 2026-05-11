@@ -22,14 +22,14 @@ if __name__ == "__main__":
     init(cuda_index=1, reproducibility=True)
     device = get_device()
 
-    # data_path = Datasets.Graph_Cora.path
-    # graph = from_file_to_graph(data_path, True).to(get_device())
+    data_path = Datasets.Graph_Cora.path
+    graph = from_file_to_graph(data_path, True).to(get_device())
 
-    v = 100
-    p = 0.1
-    e = int(p * v * (v - 1) / 2)
+    # v = 100
+    # p = 0.1
+    # e = int(p * v * (v - 1) / 2)
 
-    graph = generate_data("graph", v=v, e=e).to(get_device())
+    # graph = generate_data("graph", v=v, e=e).to(get_device())
 
     init_feature_dim = 128
     x = torch.rand((graph.num_v, init_feature_dim), device=device)

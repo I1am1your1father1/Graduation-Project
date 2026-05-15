@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     init_feature_dim = 512
 
-    data_path = Datasets.Graph_eat.path
+    data_path = Datasets.Graph_Pubmed.path
     graph = from_file_to_graph(data_path, True).to(get_device())
 
     # v = 100
@@ -44,14 +44,14 @@ if __name__ == "__main__":
     all_layers = gnn_layers + obj_layers
     net = MDSNet(all_layers)
 
-    gini_cons_lambda = lambda e, n: (-2000 + e) / 500
+    gini_cons_lambda = lambda e, n: (-15000 + e) / 5000
 
     loss, outs, eval_result = run_qubo(
         "mds",
         net,
         x,
         graph,
-        5000,
+        20000,
         loss_mds_gini_qubo,
         1e-4,
         evaluate=True,

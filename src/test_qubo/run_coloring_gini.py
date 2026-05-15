@@ -18,17 +18,17 @@ def count_values_in_range(outs: torch.Tensor) -> int:
 
 if __name__ == "__main__":
     # Find Best sol Cora: 7 22s
-    init(cuda_index=1, reproducibility=True)
+    init(cuda_index=1, reproducibility=False)
     device = get_device()
 
-    # data_path = Datasets.Graph_Cora.path
-    # graph = from_file_to_graph(data_path, True).to(get_device())
+    data_path = Datasets.Graph_Cora.path
+    graph = from_file_to_graph(data_path, True).to(get_device())
 
-    v = 100
-    p = 0.1
-    e = int(p * v * (v - 1) / 2)
+    # v = 100
+    # p = 0.1
+    # e = int(p * v * (v - 1) / 2)
 
-    graph = generate_data("graph", v=v, e=e).to(get_device())
+    # graph = generate_data("graph", v=v, e=e).to(get_device())
 
     init_feature_dim = 128
     x = torch.rand((graph.num_v, init_feature_dim), device=device)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     net = DualHeadNet(gnn_layers, shared_layers, cons_layers, obj_layers).to(device)
 
-    gini_cons_lambda = lambda e, n: (e * 0.5 - 1000) / 1000
+    gini_cons_lambda = lambda e, n: (-1000 + e) / 1000
 
     loss, outs = run_qubo(
         "coloring",

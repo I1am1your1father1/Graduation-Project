@@ -1,5 +1,6 @@
 import argparse
 import time
+import random
 from pathlib import Path
 import sys
 
@@ -32,11 +33,14 @@ def build_adj_from_graph(graph):
     return adj, degree
 
 
-def greedy_mds_naive(adj):
+def random_greedy_mds(adj, seed=None):
     """
-    朴素 greedy 求最小支配集：
-    每一步选择能新支配最多“当前未被支配节点”的点
+    Random Greedy 求解最小支配集：
+
+    每一步从能够新支配至少一个“当前未被支配节点”的候选顶点中随机选择一个点。
     """
+    rng = random.Random(seed)
+
     n = len(adj)
 
     # closed_neighborhood[u] = {u} U N(u)
@@ -46,36 +50,18 @@ def greedy_mds_naive(adj):
     selected = [False] * n
 
     while undominated:
-        best_u = None
-        best_gain = None
-        best_deg = None
+        candidates = []
 
         for u in range(n):
             gain = len(closed_neighborhood[u] & undominated)
-            deg_u = len(adj[u])
+            if gain > 0:
+                candidates.append(u)
 
-            if best_u is None:
-                best_u = u
-                best_gain = gain
-                best_deg = deg_u
-            else:
-                if gain > best_gain:
-                    best_u = u
-                    best_gain = gain
-                    best_deg = deg_u
-                elif gain == best_gain:
-                    if deg_u > best_deg:
-                        best_u = u
-                        best_gain = gain
-                        best_deg = deg_u
-                    elif deg_u == best_deg and u < best_u:
-                        best_u = u
-                        best_gain = gain
-                        best_deg = deg_u
-
-        if best_u is None or best_gain == 0:
-            u = min(undominated)
-            best_u = u
+        if len(candidates) == 0:
+            # 理论上一般不会进入这里，除非图或邻接关系异常
+            best_u = rng.choice(list(undominated))
+        else:
+            best_u = rng.choice(candidates)
 
         selected[best_u] = True
         undominated -= closed_neighborhood[best_u]
@@ -97,11 +83,6 @@ def evaluate_mds(graph, selected):
 
     for u in selected_nodes:
         dominated[u] = True
-        for v in graph.e[0]:
-            pass
-
-    for u in selected_nodes:
-        dominated[u] = True
 
     for edge in graph.e[0]:
         u, v = int(edge[0]), int(edge[1])
@@ -117,9 +98,9 @@ def evaluate_mds(graph, selected):
     return mds_size, undominated_nodes, is_valid
 
 
-def solve_one_dataset(dataset):
+def solve_one_dataset_one_run(dataset, run_id, seed):
     """
-    求解单个数据集
+    单个数据集运行一次 Random Greedy
     """
     graph = from_file_to_graph(
         dataset.path,
@@ -130,7 +111,7 @@ def solve_one_dataset(dataset):
     adj, _ = build_adj_from_graph(graph)
 
     start = time.time()
-    selected = greedy_mds_naive(adj)
+    selected = random_greedy_mds(adj, seed=seed)
     elapsed = time.time() - start
 
     mds_size, undominated_nodes, is_valid = evaluate_mds(graph, selected)
@@ -140,6 +121,8 @@ def solve_one_dataset(dataset):
         "dataset_value": dataset.value,
         "dataset_type": dataset.type,
         "file_path": dataset.path,
+        "run": run_id,
+        "seed": seed,
         "num_nodes": graph.num_v,
         "num_edges": len(graph.e[0]),
         "mds_size": mds_size,
@@ -150,6 +133,8 @@ def solve_one_dataset(dataset):
 
     print("=" * 80)
     print(f"Dataset           : {dataset.name}")
+    print(f"Run               : {run_id}")
+    print(f"Seed              : {seed}")
     print(f"Path              : {dataset.path}")
     print(f"Nodes             : {graph.num_v}")
     print(f"Edges             : {len(graph.e[0])}")
@@ -162,6 +147,64 @@ def solve_one_dataset(dataset):
     return result
 
 
+def summarize_results(df):
+    """
+    汇总每个数据集的 Random Greedy 结果：
+    - best_mds_size: 多次运行中的最好结果
+    - avg_mds_size: 平均支配集大小
+    - std_mds_size: 标准差
+    """
+    summary = []
+
+    for dataset_name, group in df.groupby("dataset_enum"):
+        success_group = group[group["mds_size"].notna()].copy()
+        valid_group = success_group[success_group["is_valid"] == True].copy()
+
+        if len(success_group) == 0:
+            summary.append({
+                "dataset_enum": dataset_name,
+                "dataset_value": None,
+                "num_nodes": None,
+                "num_edges": None,
+                "best_mds_size": None,
+                "best_run": None,
+                "best_seed": None,
+                "avg_mds_size": None,
+                "std_mds_size": None,
+                "avg_time_sec": None,
+                "std_time_sec": None,
+                "valid_runs": 0,
+                "success_runs": 0,
+            })
+            continue
+
+        if len(valid_group) > 0:
+            best_row = valid_group.loc[valid_group["mds_size"].idxmin()]
+        else:
+            best_row = success_group.loc[success_group["mds_size"].idxmin()]
+
+        summary.append({
+            "dataset_enum": dataset_name,
+            "dataset_value": best_row["dataset_value"],
+            "num_nodes": int(success_group["num_nodes"].iloc[0]),
+            "num_edges": int(success_group["num_edges"].iloc[0]),
+            "best_mds_size": int(best_row["mds_size"]),
+            "best_run": int(best_row["run"]),
+            "best_seed": int(best_row["seed"]),
+            "best_is_valid": bool(best_row["is_valid"]),
+            "best_undominated_nodes": int(best_row["undominated_nodes"]),
+            "avg_mds_size": float(success_group["mds_size"].mean()),
+            "std_mds_size": float(success_group["mds_size"].std(ddof=0)),
+            "avg_undominated_nodes": float(success_group["undominated_nodes"].mean()),
+            "avg_time_sec": float(success_group["time_sec"].mean()),
+            "std_time_sec": float(success_group["time_sec"].std(ddof=0)),
+            "valid_runs": int(len(valid_group)),
+            "success_runs": int(len(success_group)),
+        })
+
+    return pd.DataFrame(summary)
+
+
 def get_graph_datasets():
     """
     只取 graph 类型数据集
@@ -170,7 +213,7 @@ def get_graph_datasets():
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Naive Greedy baseline for MDS")
+    parser = argparse.ArgumentParser(description="Random Greedy baseline for MDS")
     parser.add_argument(
         "--dataset",
         type=str,
@@ -178,10 +221,28 @@ def parse_args():
         help="单个数据集名，例如 Graph_Cora；不填则遍历所有 graph 数据集",
     )
     parser.add_argument(
+        "--num_runs",
+        type=int,
+        default=10,
+        help="每个数据集重复运行次数",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=1,
+        help="随机种子起始值",
+    )
+    parser.add_argument(
         "--save_name",
         type=str,
-        default="mds_greedy_results.csv",
-        help="保存的 csv 文件名",
+        default="mds_random_greedy_details.csv",
+        help="详细结果 csv 文件名",
+    )
+    parser.add_argument(
+        "--summary_name",
+        type=str,
+        default="mds_random_greedy_summary.csv",
+        help="汇总结果 csv 文件名",
     )
     return parser.parse_args()
 
@@ -201,35 +262,58 @@ def main():
 
     all_results = []
 
-    for dataset in datasets:
-        try:
-            result = solve_one_dataset(dataset)
-            all_results.append(result)
-        except Exception as e:
-            print("=" * 80)
-            print(f"[ERROR] Dataset {dataset.name} failed: {e}")
-            print("=" * 80)
-            all_results.append({
-                "dataset_enum": dataset.name,
-                "dataset_value": dataset.value,
-                "dataset_type": dataset.type,
-                "file_path": dataset.path,
-                "num_nodes": None,
-                "num_edges": None,
-                "mds_size": None,
-                "undominated_nodes": None,
-                "is_valid": False,
-                "time_sec": None,
-            })
+    for dataset_idx, dataset in enumerate(datasets):
+        for run_id in range(1, args.num_runs + 1):
+            seed = args.seed + dataset_idx * 1000 + run_id
 
-    df = pd.DataFrame(all_results)
+            try:
+                result = solve_one_dataset_one_run(
+                    dataset=dataset,
+                    run_id=run_id,
+                    seed=seed,
+                )
+                all_results.append(result)
 
-    df = df[
+            except Exception as e:
+                print("=" * 80)
+                print(f"[ERROR] Dataset {dataset.name}, Run {run_id} failed: {e}")
+                print("=" * 80)
+                all_results.append({
+                    "dataset_enum": dataset.name,
+                    "dataset_value": dataset.value,
+                    "dataset_type": dataset.type,
+                    "file_path": dataset.path,
+                    "run": run_id,
+                    "seed": seed,
+                    "num_nodes": None,
+                    "num_edges": None,
+                    "mds_size": None,
+                    "undominated_nodes": None,
+                    "is_valid": False,
+                    "time_sec": None,
+                })
+
+            save_dir = ROOT_DIR / "results"
+            save_dir.mkdir(parents=True, exist_ok=True)
+
+            partial_path = save_dir / "mds_random_greedy_details_partial.csv"
+            pd.DataFrame(all_results).to_csv(
+                partial_path,
+                index=False,
+                encoding="utf-8-sig",
+            )
+
+    df_detail = pd.DataFrame(all_results)
+    df_summary = summarize_results(df_detail)
+
+    df_detail = df_detail[
         [
             "dataset_enum",
             "dataset_value",
             "dataset_type",
             "file_path",
+            "run",
+            "seed",
             "num_nodes",
             "num_edges",
             "mds_size",
@@ -242,11 +326,20 @@ def main():
     save_dir = ROOT_DIR / "results"
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    save_path = save_dir / args.save_name
-    df.to_csv(save_path, index=False, encoding="utf-8-sig")
+    detail_path = save_dir / args.save_name
+    summary_path = save_dir / args.summary_name
 
-    print("\n结果已保存到：")
-    print(save_path)
+    df_detail.to_csv(detail_path, index=False, encoding="utf-8-sig")
+    df_summary.to_csv(summary_path, index=False, encoding="utf-8-sig")
+
+    print("\n详细结果已保存到：")
+    print(detail_path)
+
+    print("\n汇总结果已保存到：")
+    print(summary_path)
+
+    print("\n汇总结果：")
+    print(df_summary.to_string(index=False))
 
 
 if __name__ == "__main__":

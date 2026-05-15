@@ -126,28 +126,7 @@
  - utils.py
 
 ## results
- - coloring_dsatur_results.csv     The results of DSATUR solver
- - coloring_greedy_results.csv     The results of greedy solver
- - coloring_scip_results.csv     The results of scip solver
- - coloring_tabu_results.csv     The results of tabu solver
-
- - maxcut_random_greedy_results.csv     The results of random greedy solver
- - maxcut_scip_results.csv     The results of scip solver
- - maxcut_tabu_results.csv     The results of tabu solver
-
- - mds_greedy_results.csv     The results of greedy solver
- - mds_random_results.csv     The results of random solver
- - mds_scip_results.csv     The results of scip solver
- - mds_tabu_results.csv     The results of tabu solver
-
- - mis_random_greedy_results.csv     The results of random greedy solver
- - mis_scip_results.csv     The results of scip solver
- - mis_tabu_results.csv     The results of tabu solver
-
- - partition_random_greedy_results.csv     The results of random greedy solver
- - partition_KL_results.csv     The results of KL solver
- - partition_random_results.csv     The results of random partition solver
- - partition_scip_results.csv     The results of scip solver
+ - Containing all the results of comparisons.
 
 
 # environment.yaml

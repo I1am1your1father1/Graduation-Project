@@ -7,8 +7,14 @@ from .coloring import loss_coloring_gini_qubo, loss_coloring_qubo
 from .max_cut import MAXCUTNet
 from .max_cut import loss_maxcut_gini_qubo, loss_maxcut_qubo
 
+from .max_k_cut import MAXkCUTNet
+from .max_k_cut import loss_maxkcut_gini_qubo, loss_maxkcut_qubo
+
 from .mds_pubo import MDSNet
 from .mds_pubo import loss_mds_gini_pubo, loss_mds_pubo
+
+from .mds import MDSNet
+from .mds import loss_mds_gini_qubo, loss_mds_qubo
 
 from .mis import MISNet
 from .mis import loss_mis_gini_qubo, loss_mis_qubo
@@ -34,9 +40,14 @@ __all__ = [
     "MAXCUTNet",
     "loss_maxcut_gini_qubo",
     "loss_maxcut_qubo",
+    "MAXkCUTNet",
+    "loss_maxkcut_gini_qubo",
+    "loss_maxkcut_qubo",
     "MDSNet",
     "loss_mds_gini_pubo",
     "loss_mds_pubo",
+    "loss_mds_gini_qubo",
+    "loss_mds_qubo",
     "MISNet",
     "loss_mis_gini_qubo",
     "loss_mis_qubo",
